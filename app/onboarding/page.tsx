@@ -8,6 +8,7 @@ import {
   Utensils, Car, ShoppingBag, Wifi, Coffee, Heart,
 } from "lucide-react";
 import { saveUser } from "@/lib/user";
+import { resetStore } from "@/lib/store";
 
 const STEPS = [
   { id: 1, label: "Profil", icon: User },
@@ -66,15 +67,15 @@ export default function OnboardingPage() {
 
   const handleFinish = async () => {
     setCompleting(true);
-    // Update nama & avatar dari onboarding ke localStorage
     saveUser({
       name: data.name || "Financial Warrior",
       avatar: data.avatar,
       level: 1,
       xp: 0,
       streak: 0,
-      title: "Financial Newbie",
+      title: "Financial Newbie 🌱",
     });
+    resetStore(); // Pastikan store bersih untuk user baru
     await new Promise((r) => setTimeout(r, 2000));
     router.push("/dashboard");
   };

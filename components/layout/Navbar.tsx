@@ -18,8 +18,9 @@ export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 20);
+    const handleScroll = () => setScrolled(window.scrollY > 10);
     window.addEventListener("scroll", handleScroll, { passive: true });
+    handleScroll();
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
@@ -28,21 +29,21 @@ export default function Navbar() {
       <motion.nav
         initial={{ y: -100, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94] }}
+        transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
         className={`fixed top-0 inset-x-0 z-50 transition-all duration-300 ${
           scrolled
-            ? "glass border-b border-white/5 shadow-lg shadow-black/20"
-            : "bg-transparent"
+            ? "bg-[#0D1225]/90 backdrop-blur-xl border-b border-white/10 shadow-lg shadow-black/30"
+            : "bg-[#0D1225]/70 backdrop-blur-md border-b border-white/5"
         }`}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             {/* Logo */}
-            <a href="#" className="flex items-center gap-2 group" id="nav-logo">
-              <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-[#6C5DD3] to-[#7C3AED] flex items-center justify-center glow-purple transition-all duration-300 group-hover:scale-110">
+            <a href="#" className="flex items-center gap-2 group shrink-0" id="nav-logo">
+              <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-[#7C6FF7] to-[#8B5CF6] flex items-center justify-center shadow-lg shadow-[#7C6FF7]/30 transition-all duration-300 group-hover:scale-110">
                 <Zap className="w-4 h-4 text-white" />
               </div>
-              <span className="text-xl font-bold">
+              <span className="text-xl font-bold text-white">
                 <span className="gradient-text">X</span>Pense
               </span>
             </a>
@@ -53,7 +54,7 @@ export default function Navbar() {
                 <a
                   key={link.label}
                   href={link.href}
-                  className="px-4 py-2 text-sm text-gray-400 hover:text-white rounded-lg hover:bg-white/5 transition-all duration-200"
+                  className="px-4 py-2 text-sm text-[#A8B4CC] hover:text-white rounded-lg hover:bg-white/8 transition-all duration-200 font-medium"
                 >
                   {link.label}
                 </a>
@@ -61,31 +62,24 @@ export default function Navbar() {
             </div>
 
             {/* Desktop CTA */}
-            <div className="hidden md:flex items-center gap-3">
-              <Link
-                href="/dashboard"
-                className="text-xs text-[#6C5DD3] hover:text-[#a78bfa] transition-colors font-medium border border-[#6C5DD3]/30 px-3 py-1.5 rounded-lg hover:bg-[#6C5DD3]/10"
-                id="nav-demo"
-              >
-                Coba Demo
-              </Link>
+            <div className="hidden md:flex items-center gap-3 shrink-0">
               <Link
                 href="/login"
-                className="text-sm text-gray-400 hover:text-white transition-colors"
+                className="text-sm text-[#A8B4CC] hover:text-white transition-colors font-medium px-3 py-1.5 rounded-lg hover:bg-white/8"
                 id="nav-login"
               >
-                Log in
+                Masuk
               </Link>
               <Link href="/register">
                 <GradientButton variant="primary" size="sm" id="nav-signup">
-                  Start Free
+                  Mulai Gratis
                 </GradientButton>
               </Link>
             </div>
 
             {/* Mobile Toggle */}
             <button
-              className="md:hidden p-2 rounded-lg text-gray-400 hover:text-white hover:bg-white/5 transition-all"
+              className="md:hidden p-2 rounded-lg text-[#A8B4CC] hover:text-white hover:bg-white/8 transition-all"
               onClick={() => setMobileOpen(!mobileOpen)}
               aria-label="Toggle menu"
             >
@@ -103,7 +97,7 @@ export default function Navbar() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.2 }}
-            className="fixed top-16 inset-x-0 z-40 glass border-b border-white/5 px-4 py-4 md:hidden"
+            className="fixed top-16 inset-x-0 z-40 bg-[#0F1530]/95 backdrop-blur-xl border-b border-white/10 px-4 py-4 md:hidden"
           >
             <div className="flex flex-col gap-1">
               {navLinks.map((link) => (
@@ -111,21 +105,22 @@ export default function Navbar() {
                   key={link.label}
                   href={link.href}
                   onClick={() => setMobileOpen(false)}
-                  className="px-4 py-3 text-sm text-gray-300 hover:text-white hover:bg-white/5 rounded-xl transition-all"
+                  className="px-4 py-3 text-sm text-[#A8B4CC] hover:text-white hover:bg-white/8 rounded-xl transition-all font-medium"
                 >
                   {link.label}
                 </a>
               ))}
-              <div className="pt-3 border-t border-white/5 mt-2 flex flex-col gap-2">
-                <Link href="/dashboard" onClick={() => setMobileOpen(false)} className="px-4 py-3 text-sm text-[#6C5DD3] font-medium">
-                  🚀 Coba Demo
+              <div className="pt-3 border-t border-white/10 mt-2 flex flex-col gap-2">
+                <Link
+                  href="/login"
+                  onClick={() => setMobileOpen(false)}
+                  className="px-4 py-3 text-sm text-[#A8B4CC] hover:text-white rounded-xl transition-all"
+                >
+                  Masuk
                 </Link>
-                <Link href="/login" onClick={() => setMobileOpen(false)} className="px-4 py-3 text-sm text-gray-400 hover:text-white">
-                  Log in
-                </Link>
-                <Link href="/register">
+                <Link href="/register" onClick={() => setMobileOpen(false)}>
                   <GradientButton variant="primary" size="sm" className="w-full">
-                    Start Free
+                    Mulai Gratis
                   </GradientButton>
                 </Link>
               </div>

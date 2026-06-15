@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { Zap, Mail, Lock, Eye, EyeOff, ArrowRight, Star, Flame } from "lucide-react";
 import ParticlesBackground from "@/components/shared/ParticlesBackground";
 import { saveUser } from "@/lib/user";
+import { loadDemoData, resetStore } from "@/lib/store";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -19,22 +20,27 @@ export default function LoginPage() {
     e.preventDefault();
     setLoading(true);
     setError("");
-    await new Promise((r) => setTimeout(r, 1500));
+    await new Promise((r) => setTimeout(r, 1200));
     if (email && password) {
-      // Simpan user berdasarkan email yang login
-      const name = email === "demo@xpense.app" ? "Demo User" : email.split("@")[0];
+      const isDemo = email === "demo@xpense.app";
+      const name = isDemo ? "Demo User" : email.split("@")[0].charAt(0).toUpperCase() + email.split("@")[0].slice(1);
       saveUser({
         name,
         email,
-        avatar: email === "demo@xpense.app" ? "🚀" : "😊",
-        level: email === "demo@xpense.app" ? 12 : 1,
-        xp: email === "demo@xpense.app" ? 1360 : 0,
-        streak: email === "demo@xpense.app" ? 14 : 0,
-        title: email === "demo@xpense.app" ? "Financial Warrior" : "Financial Newbie",
+        avatar: isDemo ? "🚀" : "😊",
+        level: isDemo ? 12 : 1,
+        xp: isDemo ? 1360 : 0,
+        streak: isDemo ? 14 : 0,
+        title: isDemo ? "Financial Warrior ⚔️" : "Financial Newbie 🌱",
       });
+      if (isDemo) {
+        loadDemoData(); // populate store with sample data
+      } else {
+        resetStore(); // start from zero
+      }
       router.push("/dashboard");
     } else {
-      setError("Email atau password salah.");
+      setError("Masukkan email dan password.");
       setLoading(false);
     }
   };
@@ -48,16 +54,17 @@ export default function LoginPage() {
       level: 12,
       xp: 1360,
       streak: 14,
-      title: "Financial Warrior",
+      title: "Financial Warrior ⚔️",
     });
-    await new Promise((r) => setTimeout(r, 800));
+    loadDemoData(); // Load sample transactions & budgets
+    await new Promise((r) => setTimeout(r, 700));
     router.push("/dashboard");
   };
 
   return (
-    <div className="min-h-screen bg-[#0A0F1E] flex overflow-hidden">
+    <div className="min-h-screen bg-[#0D1225] flex flex-col lg:flex-row overflow-hidden">
       {/* Left — Form */}
-      <div className="flex-1 flex flex-col justify-center px-6 sm:px-12 lg:px-20 relative z-10">
+      <div className="flex-1 flex flex-col justify-center px-6 sm:px-12 lg:px-16 py-12 relative z-10 min-h-screen lg:min-h-0">
         <div className="max-w-md w-full mx-auto">
           {/* Logo */}
           <motion.div

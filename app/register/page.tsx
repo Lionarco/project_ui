@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { Zap, Mail, Lock, Eye, EyeOff, User, ArrowRight, Check } from "lucide-react";
 import ParticlesBackground from "@/components/shared/ParticlesBackground";
 import { saveUser } from "@/lib/user";
+import { resetStore, loadDemoData } from "@/lib/store";
 
 const features = [
   "Lacak pengeluaran tanpa batas",
@@ -27,7 +28,7 @@ export default function RegisterPage() {
     if (!form.name || !form.email || !form.password) return;
     setLoading(true);
     await new Promise((r) => setTimeout(r, 1500));
-    // Simpan data user ke localStorage
+    // Akun baru — mulai dari NOL
     saveUser({
       name: form.name,
       email: form.email,
@@ -35,8 +36,9 @@ export default function RegisterPage() {
       level: 1,
       xp: 0,
       streak: 0,
-      title: "Financial Newbie",
+      title: "Financial Newbie 🌱",
     });
+    resetStore(); // Store kosong untuk user baru
     setStep("success");
     await new Promise((r) => setTimeout(r, 1200));
     router.push("/onboarding");
@@ -44,7 +46,6 @@ export default function RegisterPage() {
 
   const handleDemo = async () => {
     setLoading(true);
-    // Simpan user demo
     saveUser({
       name: "Demo User",
       email: "demo@xpense.app",
@@ -52,9 +53,10 @@ export default function RegisterPage() {
       level: 12,
       xp: 1360,
       streak: 14,
-      title: "Financial Warrior",
+      title: "Financial Warrior ⚔️",
     });
-    await new Promise((r) => setTimeout(r, 800));
+    loadDemoData(); // Data sample untuk demo
+    await new Promise((r) => setTimeout(r, 700));
     router.push("/dashboard");
   };
 

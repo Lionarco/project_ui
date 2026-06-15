@@ -1,7 +1,8 @@
 /**
  * XPense Global Store — localStorage-based state management
- * Manages: transactions, budgets, XP, streak, level
+ * NEW users start from ZERO. Demo users get sample data.
  */
+import { useState, useEffect } from "react";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -11,9 +12,9 @@ export interface Transaction {
   category: string;
   amount: number;
   color: string;
-  date: string;           // ISO string
-  dateLabel: string;      // human readable
-  icon: string;           // emoji
+  date: string;
+  dateLabel: string;
+  icon: string;
   note?: string;
 }
 
@@ -30,106 +31,139 @@ export interface StoreData {
   totalXP: number;
   level: number;
   streak: number;
-  lastActiveDate: string; // YYYY-MM-DD
+  lastActiveDate: string;
   title: string;
+  initialized: boolean;
 }
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
 const STORE_KEY = "xpense_store";
 const XP_PER_TRANSACTION = 50;
-const XP_PER_LEVEL: Record<number, number> = {
-  1: 500, 2: 500, 3: 750, 4: 750, 5: 1000,
-  6: 1000, 7: 1250, 8: 1250, 9: 1500, 10: 1500,
-};
-const XP_TO_NEXT = (level: number) => XP_PER_LEVEL[Math.min(level, 10)] ?? 2000;
-
-const LEVEL_TITLES: Record<number, string> = {
-  1: "Financial Newbie 🌱",
-  2: "Budget Rookie 📊",
-  3: "Savings Starter 💰",
-  4: "Expense Tracker ✅",
-  5: "Money Manager 💼",
-  6: "Budget Pro ⚡",
-  7: "Finance Expert 🎯",
-  8: "Wealth Builder 🏗️",
-  9: "Money Sage 🧠",
-  10: "Financial Master 👑",
-};
-const getTitle = (level: number) => LEVEL_TITLES[Math.min(level, 10)] ?? "Financial Legend 🏆";
 
 export const CATEGORY_META: Record<string, { color: string; icon: string }> = {
-  "Food & Drink":   { color: "#6C5DD3", icon: "🍜" },
-  "Transport":      { color: "#06B6D4", icon: "🚗" },
-  "Shopping":       { color: "#22C55E", icon: "🛍️" },
-  "Entertainment":  { color: "#7C3AED", icon: "🎬" },
-  "Coffee":         { color: "#F59E0B", icon: "☕" },
-  "Bills":          { color: "#EF4444", icon: "⚡" },
-  "Health":         { color: "#EC4899", icon: "❤️" },
-  "Other":          { color: "#9CA3AF", icon: "📌" },
+  "Food & Drink":   { color: "#7C6FF7", icon: "🍜" },
+  "Transport":      { color: "#22D3EE", icon: "🚗" },
+  "Shopping":       { color: "#34D399", icon: "🛍️" },
+  "Entertainment":  { color: "#A78BFA", icon: "🎬" },
+  "Coffee":         { color: "#FBBF24", icon: "☕" },
+  "Bills":          { color: "#F87171", icon: "⚡" },
+  "Health":         { color: "#F472B6", icon: "❤️" },
+  "Other":          { color: "#94A3B8", icon: "📌" },
 };
 
-// ─── Default data ─────────────────────────────────────────────────────────────
+const LEVEL_TITLES: Record<number, string> = {
+  1:  "Financial Newbie 🌱",
+  2:  "Budget Rookie 📊",
+  3:  "Savings Starter 💰",
+  4:  "Expense Tracker ✅",
+  5:  "Money Manager 💼",
+  6:  "Budget Pro ⚡",
+  7:  "Finance Expert 🎯",
+  8:  "Wealth Builder 🏗️",
+  9:  "Money Sage 🧠",
+  10: "Financial Master 👑",
+};
 
-const DEFAULT_TRANSACTIONS: Transaction[] = [
-  { id: "t1", label: "Indomaret", category: "Shopping",     amount: 45000,  color: "#22C55E", icon: "🛍️", date: new Date(Date.now() - 2*60*60*1000).toISOString(), dateLabel: "Hari ini, 10:32" },
-  { id: "t2", label: "Kopi Kenangan", category: "Coffee",   amount: 28000,  color: "#F59E0B", icon: "☕", date: new Date(Date.now() - 4*60*60*1000).toISOString(), dateLabel: "Hari ini, 09:15" },
-  { id: "t3", label: "Grab Car",   category: "Transport",   amount: 35000,  color: "#06B6D4", icon: "🚗", date: new Date(Date.now() - 5*60*60*1000).toISOString(), dateLabel: "Hari ini, 08:45" },
-  { id: "t4", label: "Netflix",    category: "Entertainment", amount: 54000, color: "#7C3AED", icon: "🎬", date: new Date(Date.now() - 26*60*60*1000).toISOString(), dateLabel: "Kemarin" },
-  { id: "t5", label: "Warteg Bu Dewi", category: "Food & Drink", amount: 15000, color: "#6C5DD3", icon: "🍜", date: new Date(Date.now() - 28*60*60*1000).toISOString(), dateLabel: "Kemarin" },
-  { id: "t6", label: "Listrik PLN", category: "Bills",      amount: 120000, color: "#EF4444", icon: "⚡", date: new Date(Date.now() - 50*60*60*1000).toISOString(), dateLabel: "2 hari lalu" },
-  { id: "t7", label: "Tokopedia",  category: "Shopping",    amount: 250000, color: "#22C55E", icon: "🛍️", date: new Date(Date.now() - 74*60*60*1000).toISOString(), dateLabel: "3 hari lalu" },
-  { id: "t8", label: "Starbucks",  category: "Coffee",      amount: 65000,  color: "#F59E0B", icon: "☕", date: new Date(Date.now() - 76*60*60*1000).toISOString(), dateLabel: "3 hari lalu" },
-];
+function XP_TO_NEXT(level: number): number {
+  if (level <= 2) return 500;
+  if (level <= 4) return 750;
+  if (level <= 6) return 1000;
+  if (level <= 8) return 1250;
+  return 1500;
+}
 
-const DEFAULT_BUDGETS: Budget[] = [
-  { id: "b1", label: "Food & Drink",   allocated: 1000000, color: "#6C5DD3" },
-  { id: "b2", label: "Transport",      allocated: 500000,  color: "#06B6D4" },
-  { id: "b3", label: "Shopping",       allocated: 600000,  color: "#22C55E" },
-  { id: "b4", label: "Entertainment",  allocated: 300000,  color: "#7C3AED" },
-  { id: "b5", label: "Coffee",         allocated: 200000,  color: "#F59E0B" },
-  { id: "b6", label: "Bills",          allocated: 500000,  color: "#EF4444" },
-];
+export function getTitle(level: number): string {
+  return LEVEL_TITLES[Math.min(level, 10)] ?? "Financial Legend 🏆";
+}
 
-const DEFAULT_STORE: StoreData = {
-  transactions: DEFAULT_TRANSACTIONS,
-  budgets: DEFAULT_BUDGETS,
-  totalXP: 400,
+// ─── Empty store for NEW users ────────────────────────────────────────────────
+
+export const EMPTY_STORE: StoreData = {
+  transactions: [],
+  budgets: [],
+  totalXP: 0,
   level: 1,
-  streak: 1,
+  streak: 0,
   lastActiveDate: new Date().toISOString().slice(0, 10),
   title: "Financial Newbie 🌱",
+  initialized: true,
 };
+
+// ─── Demo data ────────────────────────────────────────────────────────────────
+
+function buildDemoTransactions(): Transaction[] {
+  const now = Date.now();
+  return [
+    { id: "d1",  label: "Indomaret",        category: "Shopping",      amount: 45000,  color: "#34D399", icon: "🛍️", date: new Date(now - 2*3600000).toISOString(),   dateLabel: "Hari ini, 10:32" },
+    { id: "d2",  label: "Kopi Kenangan",    category: "Coffee",        amount: 28000,  color: "#FBBF24", icon: "☕", date: new Date(now - 4*3600000).toISOString(),   dateLabel: "Hari ini, 09:15" },
+    { id: "d3",  label: "Grab Car",         category: "Transport",     amount: 35000,  color: "#22D3EE", icon: "🚗", date: new Date(now - 5*3600000).toISOString(),   dateLabel: "Hari ini, 08:45" },
+    { id: "d4",  label: "Netflix",          category: "Entertainment", amount: 54000,  color: "#A78BFA", icon: "🎬", date: new Date(now - 26*3600000).toISOString(),  dateLabel: "Kemarin" },
+    { id: "d5",  label: "Warteg Bu Dewi",  category: "Food & Drink",  amount: 15000,  color: "#7C6FF7", icon: "🍜", date: new Date(now - 28*3600000).toISOString(),  dateLabel: "Kemarin" },
+    { id: "d6",  label: "Listrik PLN",     category: "Bills",         amount: 120000, color: "#F87171", icon: "⚡", date: new Date(now - 50*3600000).toISOString(),  dateLabel: "2 hari lalu" },
+    { id: "d7",  label: "Tokopedia",        category: "Shopping",     amount: 250000, color: "#34D399", icon: "🛍️", date: new Date(now - 74*3600000).toISOString(),  dateLabel: "3 hari lalu" },
+    { id: "d8",  label: "Starbucks",        category: "Coffee",       amount: 65000,  color: "#FBBF24", icon: "☕", date: new Date(now - 76*3600000).toISOString(),  dateLabel: "3 hari lalu" },
+    { id: "d9",  label: "Apotek K24",      category: "Health",        amount: 85000,  color: "#F472B6", icon: "❤️", date: new Date(now - 100*3600000).toISOString(), dateLabel: "4 hari lalu" },
+    { id: "d10", label: "Mie Ayam Pak Eko", category: "Food & Drink", amount: 18000,  color: "#7C6FF7", icon: "🍜", date: new Date(now - 102*3600000).toISOString(), dateLabel: "4 hari lalu" },
+    { id: "d11", label: "Spotify Premium",  category: "Entertainment", amount: 49000,  color: "#A78BFA", icon: "🎬", date: new Date(now - 130*3600000).toISOString(), dateLabel: "5 hari lalu" },
+    { id: "d12", label: "Ojol ke Kantor",  category: "Transport",     amount: 22000,  color: "#22D3EE", icon: "🚗", date: new Date(now - 145*3600000).toISOString(), dateLabel: "6 hari lalu" },
+  ];
+}
+
+const DEMO_BUDGETS: Budget[] = [
+  { id: "db1", label: "Food & Drink",   allocated: 1000000, color: "#7C6FF7" },
+  { id: "db2", label: "Transport",      allocated: 500000,  color: "#22D3EE" },
+  { id: "db3", label: "Shopping",       allocated: 600000,  color: "#34D399" },
+  { id: "db4", label: "Entertainment",  allocated: 300000,  color: "#A78BFA" },
+  { id: "db5", label: "Coffee",         allocated: 200000,  color: "#FBBF24" },
+  { id: "db6", label: "Bills",          allocated: 500000,  color: "#F87171" },
+];
+
+export function loadDemoData() {
+  const demoStore: StoreData = {
+    transactions: buildDemoTransactions(),
+    budgets: DEMO_BUDGETS,
+    totalXP: 1360,
+    level: 12,
+    streak: 14,
+    lastActiveDate: new Date().toISOString().slice(0, 10),
+    title: "Financial Warrior ⚔️",
+    initialized: true,
+  };
+  saveStore(demoStore);
+  return demoStore;
+}
 
 // ─── Core CRUD ────────────────────────────────────────────────────────────────
 
 export function getStore(): StoreData {
-  if (typeof window === "undefined") return DEFAULT_STORE;
+  if (typeof window === "undefined") return EMPTY_STORE;
   try {
     const raw = localStorage.getItem(STORE_KEY);
-    if (!raw) return { ...DEFAULT_STORE };
+    if (!raw) return { ...EMPTY_STORE };
     const parsed = JSON.parse(raw) as StoreData;
+    if (!parsed.initialized) return { ...EMPTY_STORE };
     return {
-      ...DEFAULT_STORE,
+      ...EMPTY_STORE,
       ...parsed,
-      transactions: parsed.transactions ?? DEFAULT_TRANSACTIONS,
-      budgets: parsed.budgets ?? DEFAULT_BUDGETS,
+      transactions: parsed.transactions ?? [],
+      budgets: parsed.budgets ?? [],
     };
   } catch {
-    return { ...DEFAULT_STORE };
+    return { ...EMPTY_STORE };
   }
 }
 
-function saveStore(data: StoreData) {
+export function saveStore(data: StoreData) {
   if (typeof window === "undefined") return;
-  localStorage.setItem(STORE_KEY, JSON.stringify(data));
-  // Dispatch custom event so all listeners update
+  localStorage.setItem(STORE_KEY, JSON.stringify({ ...data, initialized: true }));
   window.dispatchEvent(new CustomEvent("xpense-store-update"));
 }
 
 export function resetStore() {
   if (typeof window === "undefined") return;
-  localStorage.removeItem(STORE_KEY);
+  const fresh = { ...EMPTY_STORE, lastActiveDate: new Date().toISOString().slice(0, 10) };
+  localStorage.setItem(STORE_KEY, JSON.stringify(fresh));
   window.dispatchEvent(new CustomEvent("xpense-store-update"));
 }
 
@@ -151,10 +185,8 @@ export function updateStreak(store: StoreData): StoreData {
   const today = new Date().toISOString().slice(0, 10);
   const last = store.lastActiveDate;
   if (last === today) return store;
-
   const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
   const newStreak = last === yesterday ? store.streak + 1 : 1;
-
   return { ...store, streak: newStreak, lastActiveDate: today };
 }
 
@@ -170,17 +202,15 @@ export function addTransaction(
   const meta = CATEGORY_META[category] ?? CATEGORY_META["Other"];
 
   const now = new Date();
-  const dateLabel = formatDateLabel(now);
-
   const newTx: Transaction = {
-    id: `tx_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+    id: `tx_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
     label,
     category,
     amount,
     color: meta.color,
     icon: meta.icon,
     date: now.toISOString(),
-    dateLabel,
+    dateLabel: formatDateLabel(now),
     note,
   };
 
@@ -197,24 +227,14 @@ export function addTransaction(
   });
 
   saveStore(updatedStore);
-
-  // Sync to user profile
   syncUserFromStore(updatedStore);
 
-  return {
-    xpGained: XP_PER_TRANSACTION,
-    newLevel,
-    levelUp: newLevel > oldLevel,
-  };
+  return { xpGained: XP_PER_TRANSACTION, newLevel, levelUp: newLevel > oldLevel };
 }
 
 export function deleteTransaction(id: string) {
   const store = getStore();
-  const updated = {
-    ...store,
-    transactions: store.transactions.filter((t) => t.id !== id),
-  };
-  saveStore(updated);
+  saveStore({ ...store, transactions: store.transactions.filter((t) => t.id !== id) });
 }
 
 // ─── Budgets ──────────────────────────────────────────────────────────────────
@@ -273,14 +293,12 @@ export function getXPInfo(totalXP: number) {
 function formatDateLabel(date: Date): string {
   const today = new Date();
   const yesterday = new Date(Date.now() - 86400000);
-
   if (date.toDateString() === today.toDateString()) {
     return `Hari ini, ${date.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" })}`;
   } else if (date.toDateString() === yesterday.toDateString()) {
     return "Kemarin";
-  } else {
-    return date.toLocaleDateString("id-ID", { day: "numeric", month: "short" });
   }
+  return date.toLocaleDateString("id-ID", { day: "numeric", month: "short" });
 }
 
 function syncUserFromStore(store: StoreData) {
@@ -289,25 +307,20 @@ function syncUserFromStore(store: StoreData) {
     const raw = localStorage.getItem(USER_KEY);
     if (!raw) return;
     const user = JSON.parse(raw);
-    const updated = {
+    localStorage.setItem(USER_KEY, JSON.stringify({
       ...user,
       xp: store.totalXP,
       level: store.level,
       streak: store.streak,
       title: store.title,
-    };
-    localStorage.setItem(USER_KEY, JSON.stringify(updated));
-  } catch {
-    // silent
-  }
+    }));
+  } catch { /* silent */ }
 }
 
 // ─── React Hook ───────────────────────────────────────────────────────────────
 
-import { useState, useEffect } from "react";
-
 export function useStore() {
-  const [data, setData] = useState<StoreData>(DEFAULT_STORE);
+  const [data, setData] = useState<StoreData>(EMPTY_STORE);
 
   useEffect(() => {
     setData(getStore());
