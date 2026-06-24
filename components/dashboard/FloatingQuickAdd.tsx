@@ -158,17 +158,15 @@ export default function FloatingQuickAdd() {
                   className="space-y-3"
                 >
                   {/* Amount input */}
-                  <div className="relative">
-                    <div className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-gray-500 font-medium">
-                      Rp
-                    </div>
+                  <div className="flex items-center bg-white/5 border border-white/10 rounded-xl overflow-hidden focus-within:border-[#7C6FF7]/60 transition-all">
+                    <span className="px-3 py-3 text-sm font-semibold text-[#6B7A9B] border-r border-white/8 shrink-0 bg-white/3">Rp</span>
                     <input
                       type="number"
                       value={amount}
                       onChange={(e) => setAmount(e.target.value)}
-                      placeholder="0"
+                      placeholder="Masukkan nominal"
                       autoFocus
-                      className="w-full bg-white/5 border border-white/10 rounded-xl pl-10 pr-4 py-3 text-lg font-bold text-white placeholder-gray-600 outline-none focus:border-[#6C5DD3]/60 transition-all"
+                      className="flex-1 bg-transparent px-3 py-3 text-lg font-bold text-white placeholder-[#6B7A9B] outline-none"
                     />
                   </div>
 

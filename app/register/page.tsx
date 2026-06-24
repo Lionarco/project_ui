@@ -1,10 +1,9 @@
 "use client";
 import { useState } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Zap, Mail, Lock, Eye, EyeOff, User, ArrowRight, Check } from "lucide-react";
-import ParticlesBackground from "@/components/shared/ParticlesBackground";
+import { Zap, Mail, Lock, Eye, EyeOff, User, ArrowRight, Check, Sparkles } from "lucide-react";
 import { saveUser } from "@/lib/user";
 import { resetStore, loadDemoData } from "@/lib/store";
 
@@ -28,7 +27,6 @@ export default function RegisterPage() {
     if (!form.name || !form.email || !form.password) return;
     setLoading(true);
     await new Promise((r) => setTimeout(r, 1500));
-    // Akun baru — mulai dari NOL
     saveUser({
       name: form.name,
       email: form.email,
@@ -38,7 +36,7 @@ export default function RegisterPage() {
       streak: 0,
       title: "Financial Newbie 🌱",
     });
-    resetStore(); // Store kosong untuk user baru
+    resetStore();
     setStep("success");
     await new Promise((r) => setTimeout(r, 1200));
     router.push("/onboarding");
@@ -55,7 +53,7 @@ export default function RegisterPage() {
       streak: 14,
       title: "Financial Warrior ⚔️",
     });
-    loadDemoData(); // Data sample untuk demo
+    loadDemoData();
     await new Promise((r) => setTimeout(r, 700));
     router.push("/dashboard");
   };
@@ -71,255 +69,243 @@ export default function RegisterPage() {
     return score;
   })();
 
-  const strengthColor = ["", "#EF4444", "#F59E0B", "#06B6D4", "#22C55E"][passwordStrength];
+  const strengthColor = ["", "#F87171", "#FBBF24", "#22D3EE", "#34D399"][passwordStrength];
   const strengthLabel = ["", "Lemah", "Sedang", "Kuat", "Sangat Kuat"][passwordStrength];
 
   return (
-    <div className="min-h-screen bg-[#0A0F1E] flex overflow-hidden">
-      {/* Left — Visual */}
-      <div className="hidden lg:flex flex-1 relative overflow-hidden" style={{ background: "linear-gradient(135deg, #0B1020 0%, #0A0F1E 100%)" }}>
-        <ParticlesBackground count={40} />
-        <div className="absolute inset-0 flex flex-col justify-center p-16 z-10">
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-[#7C3AED]/15 rounded-full blur-3xl" />
-
-          <motion.div
-            initial={{ opacity: 0, x: -30 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.7, delay: 0.2 }}
-            className="relative z-10 max-w-md"
-          >
-            <div className="inline-flex items-center gap-2 glass rounded-full px-4 py-1.5 mb-6 border border-[#6C5DD3]/30">
-              <Zap className="w-3.5 h-3.5 text-[#6C5DD3]" />
-              <span className="text-xs text-gray-300 font-medium">Gratis untuk selamanya</span>
-            </div>
-
-            <h2 className="text-4xl font-black leading-tight mb-6">
-              Mulai Perjalanan<br />
-              <span className="gradient-text">Finansialmu</span><br />
-              Hari Ini
-            </h2>
-
-            <div className="space-y-3 mb-10">
-              {features.map((f, i) => (
-                <motion.div
-                  key={f}
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.3 + i * 0.08 }}
-                  className="flex items-center gap-3"
-                >
-                  <div className="w-5 h-5 rounded-full bg-[#22C55E]/20 flex items-center justify-center shrink-0">
-                    <Check className="w-3 h-3 text-[#22C55E]" />
-                  </div>
-                  <span className="text-sm text-gray-300">{f}</span>
-                </motion.div>
-              ))}
-            </div>
-
-            {/* Level preview */}
-            <div className="glass rounded-2xl p-5 border border-white/8">
-              <div className="flex items-center gap-3 mb-3">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#6C5DD3] to-[#7C3AED] flex items-center justify-center text-lg font-black">
-                  1
-                </div>
-                <div>
-                  <p className="text-sm font-bold">Financial Newbie</p>
-                  <p className="text-xs text-gray-400">Level awalmu setelah daftar</p>
-                </div>
-              </div>
-              <div className="h-2 rounded-full bg-white/10 overflow-hidden">
-                <motion.div
-                  initial={{ width: 0 }}
-                  animate={{ width: "5%" }}
-                  transition={{ duration: 1, delay: 0.5 }}
-                  className="h-full rounded-full bg-gradient-to-r from-[#6C5DD3] to-[#F59E0B]"
-                />
-              </div>
-              <p className="text-xs text-gray-500 mt-1.5">0 / 500 XP · Mulai kumpulkan XP sekarang!</p>
-            </div>
-          </motion.div>
-        </div>
+    <div className="min-h-screen bg-[#0D1225] flex items-center justify-center p-4 relative overflow-hidden">
+      {/* Background */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-0 right-1/4 w-96 h-96 bg-[#7C6FF7]/15 rounded-full blur-3xl" />
+        <div className="absolute bottom-0 left-1/4 w-80 h-80 bg-[#22D3EE]/10 rounded-full blur-3xl" />
+        <div className="absolute inset-0" style={{
+          backgroundImage: "radial-gradient(rgba(255,255,255,0.03) 1px, transparent 1px)",
+          backgroundSize: "40px 40px"
+        }} />
       </div>
 
-      {/* Right — Form */}
-      <div className="flex-1 flex flex-col justify-center px-6 sm:px-12 lg:px-20 relative z-10">
-        <div className="max-w-md w-full mx-auto">
+      <div className="w-full max-w-5xl relative z-10 grid lg:grid-cols-2 gap-8 items-center">
+
+        {/* ── Left: Features visual ── */}
+        <motion.div
+          initial={{ opacity: 0, x: -30 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.5 }}
+          className="hidden lg:flex flex-col justify-center"
+        >
+          <div className="inline-flex items-center gap-2 bg-[#7C6FF7]/15 rounded-full px-4 py-2 mb-6 border border-[#7C6FF7]/25 w-fit">
+            <Zap className="w-3.5 h-3.5 text-[#7C6FF7]" />
+            <span className="text-xs text-[#A8B4CC] font-medium">Gratis untuk selamanya</span>
+          </div>
+
+          <h2 className="text-4xl font-black leading-tight mb-6 text-white">
+            Mulai Perjalanan<br />
+            <span className="gradient-text">Finansialmu</span><br />
+            Hari Ini
+          </h2>
+
+          <div className="space-y-3 mb-8">
+            {features.map((f, i) => (
+              <motion.div
+                key={f}
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.2 + i * 0.08 }}
+                className="flex items-center gap-3"
+              >
+                <div className="w-5 h-5 rounded-full bg-[#34D399]/20 flex items-center justify-center shrink-0">
+                  <Check className="w-3 h-3 text-[#34D399]" />
+                </div>
+                <span className="text-sm text-[#A8B4CC]">{f}</span>
+              </motion.div>
+            ))}
+          </div>
+
+          {/* Level preview card */}
+          <div className="glass rounded-2xl p-5 border border-white/10">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-[#7C6FF7] to-[#8B5CF6] flex items-center justify-center text-lg font-black text-white shadow-lg shadow-[#7C6FF7]/30">
+                1
+              </div>
+              <div>
+                <p className="text-sm font-bold text-white">Financial Newbie 🌱</p>
+                <p className="text-xs text-[#A8B4CC]">Level awalmu setelah daftar</p>
+              </div>
+            </div>
+            <div className="h-2.5 rounded-full bg-white/10 overflow-hidden mb-2">
+              <motion.div
+                initial={{ width: 0 }}
+                animate={{ width: "5%" }}
+                transition={{ duration: 1.5, delay: 0.5, ease: "easeOut" }}
+                className="h-full rounded-full bg-gradient-to-r from-[#7C6FF7] to-[#FBBF24]"
+              />
+            </div>
+            <p className="text-xs text-[#6B7A9B]">0 / 500 XP · Mulai kumpulkan XP sekarang!</p>
+          </div>
+        </motion.div>
+
+        {/* ── Right: Form ── */}
+        <motion.div
+          initial={{ opacity: 0, x: 30 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.5, delay: 0.1 }}
+          className="w-full max-w-md mx-auto"
+        >
           {/* Logo */}
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="mb-8"
-          >
-            <Link href="/" className="flex items-center gap-2 group w-fit">
-              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#6C5DD3] to-[#7C3AED] flex items-center justify-center group-hover:scale-110 transition-transform">
-                <Zap style={{ width: 18, height: 18 }} className="text-white" />
-              </div>
-              <span className="text-xl font-bold">
-                <span className="gradient-text">X</span>Pense
-              </span>
-            </Link>
-          </motion.div>
+          <Link href="/" className="inline-flex items-center gap-2.5 mb-8 group">
+            <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-[#7C6FF7] to-[#8B5CF6] flex items-center justify-center shadow-lg shadow-[#7C6FF7]/30 group-hover:scale-110 transition-transform">
+              <Zap className="w-5 h-5 text-white" />
+            </div>
+            <span className="text-2xl font-bold text-white">
+              <span className="gradient-text">X</span>Pense
+            </span>
+          </Link>
 
-          {step === "success" ? (
-            <motion.div
-              initial={{ scale: 0.8, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              className="text-center py-12"
-            >
+          <AnimatePresence mode="wait">
+            {step === "success" ? (
               <motion.div
-                animate={{ scale: [1, 1.2, 1] }}
-                transition={{ duration: 0.5 }}
-                className="w-20 h-20 rounded-full bg-[#22C55E]/20 flex items-center justify-center mx-auto mb-4"
+                key="success"
+                initial={{ scale: 0.8, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                className="text-center py-16"
               >
-                <Check className="w-10 h-10 text-[#22C55E]" />
+                <motion.div
+                  animate={{ scale: [1, 1.2, 1] }}
+                  transition={{ duration: 0.6 }}
+                  className="w-24 h-24 rounded-full bg-[#34D399]/20 flex items-center justify-center mx-auto mb-6 border-2 border-[#34D399]/30"
+                >
+                  <Check className="w-12 h-12 text-[#34D399]" />
+                </motion.div>
+                <h2 className="text-3xl font-black mb-3 text-white">Akun Dibuat! 🎉</h2>
+                <p className="text-[#A8B4CC]">Mengarahkan ke onboarding...</p>
               </motion.div>
-              <h2 className="text-2xl font-black mb-2">Akun Dibuat! 🎉</h2>
-              <p className="text-gray-400 text-sm">Mengarahkan ke onboarding...</p>
-            </motion.div>
-          ) : (
-            <>
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.1 }}
-                className="mb-6"
-              >
-                <h1 className="text-3xl font-black mb-2">Buat Akun Gratis ✨</h1>
-                <p className="text-gray-400 text-sm">Bergabung dengan 50.000+ Financial Warriors</p>
-              </motion.div>
-
-              {/* Demo shortcut */}
-              <motion.button
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.15 }}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={handleDemo}
-                disabled={loading}
-                className="w-full py-3 rounded-xl border border-[#6C5DD3]/40 text-sm font-semibold text-[#a78bfa] glass mb-5 flex items-center justify-center gap-2 hover:border-[#6C5DD3]/70 transition-all"
-              >
-                <Zap className="w-4 h-4" />
-                Langsung Coba Demo (Tanpa Daftar)
-              </motion.button>
-
-              <div className="flex items-center gap-3 mb-5">
-                <div className="flex-1 h-px bg-white/8" />
-                <span className="text-xs text-gray-500">atau daftar dengan email</span>
-                <div className="flex-1 h-px bg-white/8" />
-              </div>
-
-              <motion.form
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2 }}
-                onSubmit={handleRegister}
-                className="space-y-4"
-              >
-                {/* Name */}
-                <div>
-                  <label className="text-xs text-gray-400 font-medium mb-1.5 block">Nama Lengkap</label>
-                  <div className="relative">
-                    <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
-                    <input
-                      type="text"
-                      value={form.name}
-                      onChange={(e) => setForm({ ...form, name: e.target.value })}
-                      placeholder="Nama kamu"
-                      className="w-full bg-white/5 border border-white/10 rounded-xl pl-10 pr-4 py-3 text-sm text-white placeholder-gray-500 outline-none focus:border-[#6C5DD3]/60 transition-all"
-                    />
-                  </div>
+            ) : (
+              <motion.div key="form">
+                <div className="mb-7">
+                  <h1 className="text-3xl font-black text-white mb-2">Buat Akun Gratis ✨</h1>
+                  <p className="text-[#A8B4CC] text-sm">Bergabung dengan 50.000+ Financial Warriors</p>
                 </div>
 
-                {/* Email */}
-                <div>
-                  <label className="text-xs text-gray-400 font-medium mb-1.5 block">Email</label>
-                  <div className="relative">
-                    <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
-                    <input
-                      type="email"
-                      value={form.email}
-                      onChange={(e) => setForm({ ...form, email: e.target.value })}
-                      placeholder="nama@email.com"
-                      className="w-full bg-white/5 border border-white/10 rounded-xl pl-10 pr-4 py-3 text-sm text-white placeholder-gray-500 outline-none focus:border-[#6C5DD3]/60 transition-all"
-                    />
-                  </div>
-                </div>
-
-                {/* Password */}
-                <div>
-                  <label className="text-xs text-gray-400 font-medium mb-1.5 block">Password</label>
-                  <div className="relative">
-                    <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
-                    <input
-                      type={showPass ? "text" : "password"}
-                      value={form.password}
-                      onChange={(e) => setForm({ ...form, password: e.target.value })}
-                      placeholder="Min. 8 karakter"
-                      className="w-full bg-white/5 border border-white/10 rounded-xl pl-10 pr-11 py-3 text-sm text-white placeholder-gray-500 outline-none focus:border-[#6C5DD3]/60 transition-all"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPass(!showPass)}
-                      className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-300"
-                    >
-                      {showPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                    </button>
-                  </div>
-
-                  {/* Password strength */}
-                  {form.password && (
-                    <div className="mt-2">
-                      <div className="flex gap-1 mb-1">
-                        {[1, 2, 3, 4].map((i) => (
-                          <div
-                            key={i}
-                            className="flex-1 h-1 rounded-full transition-all duration-300"
-                            style={{
-                              background: i <= passwordStrength ? strengthColor : "rgba(255,255,255,0.1)",
-                            }}
-                          />
-                        ))}
-                      </div>
-                      <p className="text-[10px]" style={{ color: strengthColor }}>{strengthLabel}</p>
-                    </div>
-                  )}
-                </div>
-
+                {/* Demo shortcut */}
                 <motion.button
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
-                  type="submit"
+                  onClick={handleDemo}
                   disabled={loading}
-                  className="w-full py-3.5 rounded-xl font-semibold text-sm text-white bg-gradient-to-r from-[#6C5DD3] to-[#7C3AED] flex items-center justify-center gap-2 shadow-lg shadow-[#6C5DD3]/20"
+                  className="w-full py-3.5 rounded-xl border border-[#7C6FF7]/40 text-sm font-semibold text-[#a78bfa] bg-[#7C6FF7]/8 mb-5 flex items-center justify-center gap-2 hover:border-[#7C6FF7]/70 hover:bg-[#7C6FF7]/12 transition-all"
                 >
-                  {loading ? (
-                    <motion.div
-                      animate={{ rotate: 360 }}
-                      transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                      className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full"
-                    />
-                  ) : (
-                    <>Daftar Gratis <ArrowRight className="w-4 h-4" /></>
-                  )}
+                  <Sparkles className="w-4 h-4" />
+                  Langsung Coba Demo (Tanpa Daftar)
                 </motion.button>
 
-                <p className="text-xs text-gray-500 text-center">
-                  Dengan mendaftar, kamu setuju dengan{" "}
-                  <span className="text-[#6C5DD3]">Terms of Service</span> dan{" "}
-                  <span className="text-[#6C5DD3]">Privacy Policy</span>
-                </p>
-              </motion.form>
+                <div className="flex items-center gap-3 mb-5">
+                  <div className="flex-1 h-px bg-white/8" />
+                  <span className="text-xs text-[#6B7A9B] px-2">atau daftar dengan email</span>
+                  <div className="flex-1 h-px bg-white/8" />
+                </div>
 
-              <p className="text-center text-sm text-gray-500 mt-6">
-                Sudah punya akun?{" "}
-                <Link href="/login" className="text-[#6C5DD3] hover:text-[#a78bfa] font-semibold transition-colors">
-                  Login
-                </Link>
-              </p>
-            </>
-          )}
-        </div>
+                <form onSubmit={handleRegister} className="space-y-4">
+                  {/* Name */}
+                  <div>
+                    <label className="text-xs font-semibold text-[#A8B4CC] mb-2 block">Nama Lengkap</label>
+                    <div className="relative">
+                      <User className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[#6B7A9B]" />
+                      <input
+                        type="text"
+                        value={form.name}
+                        onChange={(e) => setForm({ ...form, name: e.target.value })}
+                        placeholder="Nama kamu"
+                        className="w-full bg-white/5 border border-white/10 rounded-xl pl-11 pr-4 py-3.5 text-sm text-white placeholder-[#6B7A9B] outline-none focus:border-[#7C6FF7]/60 focus:bg-white/8 transition-all"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Email */}
+                  <div>
+                    <label className="text-xs font-semibold text-[#A8B4CC] mb-2 block">Email</label>
+                    <div className="relative">
+                      <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[#6B7A9B]" />
+                      <input
+                        type="email"
+                        value={form.email}
+                        onChange={(e) => setForm({ ...form, email: e.target.value })}
+                        placeholder="nama@email.com"
+                        className="w-full bg-white/5 border border-white/10 rounded-xl pl-11 pr-4 py-3.5 text-sm text-white placeholder-[#6B7A9B] outline-none focus:border-[#7C6FF7]/60 focus:bg-white/8 transition-all"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Password */}
+                  <div>
+                    <label className="text-xs font-semibold text-[#A8B4CC] mb-2 block">Password</label>
+                    <div className="relative">
+                      <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[#6B7A9B]" />
+                      <input
+                        type={showPass ? "text" : "password"}
+                        value={form.password}
+                        onChange={(e) => setForm({ ...form, password: e.target.value })}
+                        placeholder="Min. 8 karakter"
+                        className="w-full bg-white/5 border border-white/10 rounded-xl pl-11 pr-12 py-3.5 text-sm text-white placeholder-[#6B7A9B] outline-none focus:border-[#7C6FF7]/60 focus:bg-white/8 transition-all"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPass(!showPass)}
+                        className="absolute right-4 top-1/2 -translate-y-1/2 text-[#6B7A9B] hover:text-white transition-colors"
+                      >
+                        {showPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      </button>
+                    </div>
+                    {form.password && (
+                      <div className="mt-2.5">
+                        <div className="flex gap-1 mb-1.5">
+                          {[1, 2, 3, 4].map((i) => (
+                            <div
+                              key={i}
+                              className="flex-1 h-1.5 rounded-full transition-all duration-300"
+                              style={{ background: i <= passwordStrength ? strengthColor : "rgba(255,255,255,0.08)" }}
+                            />
+                          ))}
+                        </div>
+                        <p className="text-[11px] font-medium" style={{ color: strengthColor }}>{strengthLabel}</p>
+                      </div>
+                    )}
+                  </div>
+
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    type="submit"
+                    disabled={loading}
+                    className="w-full py-4 rounded-xl font-bold text-sm text-white bg-gradient-to-r from-[#7C6FF7] to-[#8B5CF6] flex items-center justify-center gap-2 shadow-lg shadow-[#7C6FF7]/25 transition-all mt-2"
+                  >
+                    {loading ? (
+                      <motion.div
+                        animate={{ rotate: 360 }}
+                        transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                        className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full"
+                      />
+                    ) : (
+                      <>Daftar Gratis <ArrowRight className="w-4 h-4" /></>
+                    )}
+                  </motion.button>
+
+                  <p className="text-xs text-[#6B7A9B] text-center leading-relaxed">
+                    Dengan mendaftar, kamu setuju dengan{" "}
+                    <span className="text-[#7C6FF7]">Terms of Service</span> dan{" "}
+                    <span className="text-[#7C6FF7]">Privacy Policy</span>
+                  </p>
+                </form>
+
+                <p className="text-center text-sm text-[#6B7A9B] mt-6">
+                  Sudah punya akun?{" "}
+                  <Link href="/login" className="text-[#7C6FF7] hover:text-[#a78bfa] font-semibold transition-colors">
+                    Masuk
+                  </Link>
+                </p>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </motion.div>
       </div>
     </div>
   );

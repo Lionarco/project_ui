@@ -45,10 +45,11 @@ export default function BudgetsPage() {
 
   return (
     <div className="space-y-6 max-w-5xl page-fade">
+      {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
-          <h1 className="text-2xl font-black">Budgets</h1>
-          <p className="text-sm text-gray-400 mt-0.5">Kelola batas pengeluaran bulananmu</p>
+          <h1 className="text-3xl font-black">Budget <span className="gradient-text">Bulanan</span></h1>
+          <p className="text-sm text-[#A8B4CC] mt-1">Kelola batas pengeluaran dan pantau progresmu</p>
         </div>
         <GradientButton variant="primary" size="md" id="add-budget-btn" onClick={() => setAddOpen(true)}>
           <Plus className="w-4 h-4" />
@@ -57,71 +58,79 @@ export default function BudgetsPage() {
       </div>
 
       {/* Overall summary */}
-      <GlassCard
-        className="p-6 border border-white/8"
-        style={{ background: "linear-gradient(135deg, rgba(108,93,211,0.12) 0%, rgba(6,182,212,0.06) 100%)" }}
+      <div
+        className="rounded-3xl p-6 relative overflow-hidden"
+        style={{
+          background: "linear-gradient(135deg, rgba(124,111,247,0.18) 0%, rgba(34,211,238,0.10) 100%)",
+          border: "1px solid rgba(124,111,247,0.22)"
+        }}
       >
-        <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
-          <div>
-            <p className="text-sm text-gray-400">Total Budget Terpakai</p>
-            <p className="text-3xl font-black mt-1">
-              <span style={{ color: overallPct > 80 ? "#EF4444" : "#6C5DD3" }}>{overallPct}%</span>
-              <span className="text-lg text-gray-500 font-normal"> dipakai</span>
-            </p>
-          </div>
-          <div className="text-right">
-            <p className="text-xs text-gray-500 mb-0.5">Total Budget</p>
-            <p className="text-lg font-bold text-white">Rp {totalAllocated.toLocaleString("id-ID")}</p>
-            <p className="text-xs text-gray-500 mt-1">
-              Rp {totalSpent.toLocaleString("id-ID")} dipakai
-            </p>
-          </div>
-        </div>
-        <div className="h-3 rounded-full bg-white/10 overflow-hidden">
-          <motion.div
-            initial={{ width: 0 }}
-            animate={{ width: `${Math.min(overallPct, 100)}%` }}
-            transition={{ duration: 1.5, ease: "easeOut" }}
-            className="h-full rounded-full relative overflow-hidden"
-            style={{
-              background:
-                overallPct > 80
-                  ? "linear-gradient(90deg, #F59E0B, #EF4444)"
-                  : "linear-gradient(90deg, #6C5DD3, #06B6D4)",
-            }}
-          >
-            <div className="absolute inset-0 shimmer" />
-          </motion.div>
-        </div>
-
-        <div className="grid grid-cols-3 gap-4 mt-5">
-          {[
-            { label: "Budgets", val: budgets.length, icon: Target, color: "#6C5DD3" },
-            { label: "On Track", val: budgets.filter((b) => b.allocated > 0 && b.spent / b.allocated < 0.8).length, icon: TrendingUp, color: "#22C55E" },
-            { label: "Warnings", val: budgets.filter((b) => b.allocated > 0 && b.spent / b.allocated >= 0.8).length, icon: AlertTriangle, color: "#F59E0B" },
-          ].map(({ label, val, icon: Icon, color }) => (
-            <div key={label} className="text-center">
-              <Icon className="w-4 h-4 mx-auto mb-1" style={{ color }} />
-              <p className="text-xl font-black" style={{ color }}>{val}</p>
-              <p className="text-xs text-gray-500">{label}</p>
+        <div className="absolute top-0 right-0 w-64 h-64 bg-[#7C6FF7]/12 rounded-full blur-3xl -translate-y-1/3 translate-x-1/3 pointer-events-none" />
+        <div className="relative z-10">
+          <div className="flex items-center justify-between mb-5 flex-wrap gap-3">
+            <div>
+              <p className="text-sm text-[#A8B4CC] font-medium">Total Budget Terpakai</p>
+              <p className="text-4xl font-black mt-1">
+                <span style={{ color: overallPct > 80 ? "#F87171" : "#7C6FF7" }}>{overallPct}%</span>
+                <span className="text-lg text-[#6B7A9B] font-normal ml-2">digunakan</span>
+              </p>
             </div>
-          ))}
+            <div className="text-right">
+              <p className="text-xs text-[#6B7A9B] mb-1">Total Budget</p>
+              <p className="text-xl font-bold text-white">Rp {totalAllocated.toLocaleString("id-ID")}</p>
+              <p className="text-xs text-[#A8B4CC] mt-1">Rp {totalSpent.toLocaleString("id-ID")} sudah dipakai</p>
+            </div>
+          </div>
+
+          <div className="h-3.5 rounded-full bg-white/8 overflow-hidden mb-5">
+            <motion.div
+              initial={{ width: 0 }}
+              animate={{ width: `${Math.min(overallPct, 100)}%` }}
+              transition={{ duration: 1.5, ease: "easeOut" }}
+              className="h-full rounded-full relative overflow-hidden"
+              style={{
+                background: overallPct > 80
+                  ? "linear-gradient(90deg, #FBBF24, #F87171)"
+                  : "linear-gradient(90deg, #7C6FF7, #22D3EE)",
+              }}
+            >
+              <div className="absolute inset-0 shimmer" />
+            </motion.div>
+          </div>
+
+          <div className="grid grid-cols-3 gap-4">
+            {[
+              { label: "Total Budget", val: budgets.length, icon: Target, color: "#7C6FF7" },
+              { label: "On Track", val: budgets.filter((b) => b.allocated > 0 && b.spent / b.allocated < 0.8).length, icon: TrendingUp, color: "#34D399" },
+              { label: "Perlu Perhatian", val: budgets.filter((b) => b.allocated > 0 && b.spent / b.allocated >= 0.8).length, icon: AlertTriangle, color: "#FBBF24" },
+            ].map(({ label, val, icon: Icon, color }) => (
+              <div key={label} className="text-center bg-white/5 rounded-2xl py-3 border border-white/8">
+                <Icon className="w-4 h-4 mx-auto mb-1.5" style={{ color }} />
+                <p className="text-2xl font-black" style={{ color }}>{val}</p>
+                <p className="text-[10px] text-[#6B7A9B] mt-0.5">{label}</p>
+              </div>
+            ))}
+          </div>
         </div>
-      </GlassCard>
+      </div>
 
       {/* Budget cards */}
       {budgets.length === 0 ? (
-        <GlassCard className="p-12 border border-white/5 text-center">
-          <p className="text-4xl mb-3">📊</p>
-          <p className="text-gray-400 font-medium">Belum ada budget</p>
-          <p className="text-gray-600 text-sm mt-1">Buat budget pertama untuk mulai melacak pengeluaranmu</p>
-          <button
+        <div className="rounded-3xl p-16 border border-white/8 glass text-center">
+          <div className="w-20 h-20 rounded-3xl bg-[#7C6FF7]/12 flex items-center justify-center mx-auto mb-5 text-4xl">
+            📊
+          </div>
+          <p className="text-[#A8B4CC] font-semibold text-lg mb-2">Belum ada budget</p>
+          <p className="text-[#6B7A9B] text-sm mb-5">Buat budget untuk mulai melacak dan mengontrol pengeluaranmu</p>
+          <motion.button
+            whileHover={{ scale: 1.03 }}
+            whileTap={{ scale: 0.97 }}
             onClick={() => setAddOpen(true)}
-            className="mt-4 px-4 py-2 rounded-xl bg-gradient-to-r from-[#6C5DD3] to-[#7C3AED] text-sm font-semibold text-white"
+            className="px-6 py-3 rounded-xl bg-gradient-to-r from-[#7C6FF7] to-[#8B5CF6] text-sm font-bold text-white shadow-lg shadow-[#7C6FF7]/25"
           >
-            + Buat Budget
-          </button>
-        </GlassCard>
+            + Buat Budget Pertama
+          </motion.button>
+        </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {budgets.map((b) => {
@@ -130,56 +139,55 @@ export default function BudgetsPage() {
             const overBudget = b.spent > b.allocated;
             const warning = pct >= 80 && !overBudget;
             const meta = CATEGORY_META[b.label] ?? { icon: "📌", color: b.color };
+            const statusColor = overBudget ? "#F87171" : warning ? "#FBBF24" : b.color;
 
             return (
-              <motion.div key={b.id} whileHover={{ y: -2 }} transition={{ duration: 0.2 }}>
-                <GlassCard className="p-5 border border-white/5 group">
+              <motion.div key={b.id} whileHover={{ y: -4, boxShadow: `0 16px 48px ${b.color}18` }} transition={{ duration: 0.2 }}>
+                <div
+                  className="rounded-2xl p-5 border group transition-all"
+                  style={{ background: `${b.color}08`, borderColor: `${b.color}20` }}
+                >
                   <div className="flex items-start justify-between mb-4">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl flex items-center justify-center text-xl"
+                      <div className="w-11 h-11 rounded-2xl flex items-center justify-center text-2xl shadow-lg"
                         style={{ background: `${b.color}20` }}>
                         {meta.icon}
                       </div>
                       <div>
-                        <p className="font-semibold text-sm">{b.label}</p>
-                        <p className="text-xs text-gray-500">Budget bulanan</p>
+                        <p className="font-bold text-sm text-white">{b.label}</p>
+                        <p className="text-[10px] text-[#6B7A9B]">Budget bulanan</p>
                       </div>
                     </div>
                     <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                       <button
                         onClick={() => deleteBudget(b.id)}
-                        className="p-1.5 rounded-lg text-gray-500 hover:text-[#EF4444] hover:bg-[#EF4444]/10 transition-all"
+                        className="p-1.5 rounded-lg text-[#6B7A9B] hover:text-[#F87171] hover:bg-[#F87171]/10 transition-all"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>
                     </div>
                   </div>
 
-                  <div className="flex justify-between text-sm mb-2">
-                    <span className="text-gray-400">Rp {b.spent.toLocaleString("id-ID")}</span>
-                    <span className="text-gray-500">/ Rp {b.allocated.toLocaleString("id-ID")}</span>
+                  <div className="flex justify-between text-xs mb-2">
+                    <span className="font-semibold text-white">Rp {b.spent.toLocaleString("id-ID")}</span>
+                    <span className="text-[#6B7A9B]">/ Rp {b.allocated.toLocaleString("id-ID")}</span>
                   </div>
 
-                  <div className="h-2.5 rounded-full bg-white/10 overflow-hidden mb-3">
+                  <div className="h-2.5 rounded-full bg-white/8 overflow-hidden mb-3">
                     <motion.div
                       initial={{ width: 0 }}
                       animate={{ width: `${pct}%` }}
                       transition={{ duration: 1, ease: "easeOut" }}
                       className="h-full rounded-full relative overflow-hidden"
-                      style={{
-                        background: overBudget ? "#EF4444" : warning ? "#F59E0B" : b.color,
-                      }}
+                      style={{ background: overBudget ? "#F87171" : warning ? "linear-gradient(90deg, #FBBF24, #F97316)" : `linear-gradient(90deg, ${b.color}cc, ${b.color})` }}
                     >
                       {!overBudget && <div className="absolute inset-0 shimmer" />}
                     </motion.div>
                   </div>
 
                   <div className="flex items-center justify-between">
-                    <span className={`text-xs font-semibold flex items-center gap-1 ${
-                      overBudget ? "text-[#EF4444]" : warning ? "text-[#F59E0B]" : "text-gray-400"
-                    }`}>
-                      {overBudget && <AlertTriangle className="w-3 h-3" />}
-                      {warning && <AlertTriangle className="w-3 h-3" />}
+                    <span className={`text-xs font-medium flex items-center gap-1`} style={{ color: statusColor }}>
+                      {(overBudget || warning) && <AlertTriangle className="w-3 h-3" />}
                       {overBudget
                         ? `Lebih Rp ${Math.abs(remaining).toLocaleString("id-ID")}`
                         : warning
@@ -187,13 +195,13 @@ export default function BudgetsPage() {
                         : `Sisa Rp ${remaining.toLocaleString("id-ID")}`}
                     </span>
                     <span
-                      className="text-xs font-bold px-2 py-0.5 rounded-full"
-                      style={{ color: overBudget ? "#EF4444" : b.color, background: overBudget ? "#EF444420" : `${b.color}20` }}
+                      className="text-xs font-bold px-2.5 py-1 rounded-full"
+                      style={{ color: statusColor, background: `${statusColor}18` }}
                     >
                       {pct}%
                     </span>
                   </div>
-                </GlassCard>
+                </div>
               </motion.div>
             );
           })}
@@ -229,19 +237,20 @@ export default function BudgetsPage() {
                   <div className="grid grid-cols-4 gap-2">
                     {categoryOptions.map((cat) => {
                       const meta = CATEGORY_META[cat];
+                      const shortName = cat === "Food & Drink" ? "Makanan" : cat === "Entertainment" ? "Hiburan" : cat;
                       return (
                         <button
                           key={cat}
                           onClick={() => setForm({ ...form, label: cat })}
-                          className={`flex flex-col items-center gap-1 p-2.5 rounded-xl border text-[10px] font-medium transition-all ${
+                          className={`flex flex-col items-center gap-1.5 p-3 rounded-2xl border transition-all ${
                             form.label === cat
-                              ? "border-[#6C5DD3]/60 text-white"
-                              : "border-white/8 text-gray-400 hover:border-white/20"
+                              ? "border-[#7C6FF7]/60 text-white scale-105"
+                              : "border-white/8 text-gray-400 hover:border-white/20 hover:text-white"
                           }`}
-                          style={form.label === cat ? { background: `${meta.color}20` } : {}}
+                          style={form.label === cat ? { background: `${meta.color}18` } : { background: "rgba(255,255,255,0.03)" }}
                         >
-                          <span className="text-base">{meta.icon}</span>
-                          <span className="truncate w-full text-center">{cat}</span>
+                          <span className="text-xl">{meta.icon}</span>
+                          <span className="text-[9px] font-semibold truncate w-full text-center leading-tight">{shortName}</span>
                         </button>
                       );
                     })}
@@ -249,21 +258,25 @@ export default function BudgetsPage() {
                 </div>
 
                 <div>
-                  <label className="text-xs text-gray-400 font-medium mb-1.5 block">Batas Bulanan (Rp)</label>
-                  <div className="relative">
-                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-sm text-gray-500">Rp</span>
+                  <label className="text-xs text-gray-400 font-medium mb-2 block">Batas Bulanan</label>
+                  <div className="flex items-center bg-white/5 border border-white/10 rounded-xl overflow-hidden focus-within:border-[#7C6FF7]/60 transition-all">
+                    <span className="px-4 py-3.5 text-sm font-semibold text-[#6B7A9B] border-r border-white/8 shrink-0 bg-white/3">Rp</span>
                     <input
                       type="number"
                       value={form.allocated}
                       onChange={(e) => setForm({ ...form, allocated: e.target.value })}
-                      placeholder="500000"
-                      className="w-full bg-white/5 border border-white/10 rounded-xl pl-10 pr-4 py-3 text-sm text-white placeholder-gray-500 outline-none focus:border-[#6C5DD3]/50 transition-all"
+                      placeholder="Masukkan jumlah budget"
+                      className="flex-1 bg-transparent px-4 py-3.5 text-sm text-white placeholder-[#6B7A9B] outline-none"
                     />
                   </div>
-                  <div className="flex gap-2 mt-2 flex-wrap">
+                  <div className="flex gap-2 mt-3 flex-wrap">
                     {[250000, 500000, 1000000, 2000000].map((v) => (
                       <button key={v} onClick={() => setForm({ ...form, allocated: String(v) })}
-                        className="px-2.5 py-1 glass rounded-lg border border-white/8 text-xs text-gray-400 hover:text-white hover:border-[#6C5DD3]/40 transition-all">
+                        className={`px-3 py-1.5 rounded-lg border text-xs font-medium transition-all ${
+                          form.allocated === String(v)
+                            ? "bg-[#7C6FF7]/20 border-[#7C6FF7]/40 text-[#a78bfa]"
+                            : "glass border-white/8 text-gray-400 hover:text-white hover:border-[#7C6FF7]/30"
+                        }`}>
                         {v >= 1000000 ? `${v / 1000000}Jt` : `${v / 1000}K`}
                       </button>
                     ))}
@@ -274,11 +287,13 @@ export default function BudgetsPage() {
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={handleSave}
-                  className={`w-full py-3 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 ${
-                    saved ? "bg-[#22C55E]" : "bg-gradient-to-r from-[#6C5DD3] to-[#7C3AED]"
+                  className={`w-full py-4 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 mt-2 transition-all ${
+                    saved
+                      ? "bg-[#34D399] shadow-lg shadow-[#34D399]/25"
+                      : "bg-gradient-to-r from-[#7C6FF7] to-[#8B5CF6] shadow-lg shadow-[#7C6FF7]/25"
                   } text-white`}
                 >
-                  {saved ? <><Check className="w-4 h-4" />Budget Dibuat!</> : "Buat Budget"}
+                  {saved ? <><Check className="w-4 h-4" />Budget Dibuat! 🎉</> : "Buat Budget"}
                 </motion.button>
               </div>
             </motion.div>

@@ -73,8 +73,8 @@ export default function ExpensesPage() {
       {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
-          <h1 className="text-2xl font-black">Expenses</h1>
-          <p className="text-sm text-gray-400 mt-0.5">Lacak setiap rupiah yang kamu keluarkan</p>
+          <h1 className="text-3xl font-black">Catatan <span className="gradient-text">Pengeluaran</span></h1>
+          <p className="text-sm text-[#A8B4CC] mt-1">Lacak setiap rupiah yang kamu keluarkan</p>
         </div>
         <GradientButton variant="primary" size="md" id="add-expense-btn" onClick={() => setAddOpen(true)}>
           <Plus className="w-4 h-4" />
@@ -85,31 +85,37 @@ export default function ExpensesPage() {
       {/* Summary strip */}
       <div className="grid grid-cols-3 gap-3">
         {[
-          { label: "Bulan Ini", val: `Rp ${monthlyTotal.toLocaleString("id-ID")}`, color: "#EF4444" },
-          { label: "Hari Ini", val: `Rp ${todayTotal.toLocaleString("id-ID")}`, color: "#F59E0B" },
-          { label: "Rata-rata/Hari", val: `Rp ${dailyAvg.toLocaleString("id-ID")}`, color: "#6C5DD3" },
-        ].map(({ label, val, color }) => (
-          <GlassCard key={label} className="p-4 border border-white/5 text-center">
-            <p className="text-xs text-gray-500 mb-1">{label}</p>
+          { label: "Bulan Ini", val: `Rp ${monthlyTotal.toLocaleString("id-ID")}`, color: "#F87171", icon: "📅" },
+          { label: "Hari Ini", val: `Rp ${todayTotal.toLocaleString("id-ID")}`, color: "#FBBF24", icon: "🕐" },
+          { label: "Rata-rata/Hari", val: `Rp ${dailyAvg.toLocaleString("id-ID")}`, color: "#7C6FF7", icon: "📊" },
+        ].map(({ label, val, color, icon }) => (
+          <motion.div
+            key={label}
+            whileHover={{ y: -2 }}
+            className="glass rounded-2xl p-4 border border-white/8 text-center transition-all"
+            style={{ borderColor: `${color}18` }}
+          >
+            <p className="text-base mb-1">{icon}</p>
+            <p className="text-[10px] text-[#6B7A9B] mb-1 font-medium">{label}</p>
             <p className="text-sm font-black truncate" style={{ color }}>{val}</p>
-          </GlassCard>
+          </motion.div>
         ))}
       </div>
 
       {/* Search + Filter */}
-      <GlassCard className="p-4 border border-white/5">
+      <div className="glass rounded-2xl p-4 border border-white/8">
         <div className="flex gap-3 mb-3">
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#6B7A9B]" />
             <input
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Cari transaksi…"
-              className="w-full bg-white/5 border border-white/8 rounded-xl pl-9 pr-4 py-2 text-sm text-white placeholder-gray-500 outline-none focus:border-[#6C5DD3]/50 transition-all"
+              className="w-full bg-white/5 border border-white/8 rounded-xl pl-10 pr-4 py-2.5 text-sm text-white placeholder-[#6B7A9B] outline-none focus:border-[#7C6FF7]/50 transition-all"
             />
           </div>
-          <button className="flex items-center gap-2 px-4 py-2 glass rounded-xl border border-white/8 text-sm text-gray-400 hover:text-white hover:border-[#6C5DD3]/30 transition-all">
+          <button className="flex items-center gap-2 px-4 py-2.5 glass rounded-xl border border-white/8 text-sm text-[#A8B4CC] hover:text-white hover:border-[#7C6FF7]/30 transition-all">
             <Filter className="w-4 h-4" />
             <span className="hidden sm:inline">Filter</span>
           </button>
@@ -120,26 +126,26 @@ export default function ExpensesPage() {
             <button
               key={f}
               onClick={() => setActiveFilter(f)}
-              className={`shrink-0 px-3 py-1.5 rounded-xl text-xs font-medium transition-all ${
+              className={`shrink-0 px-3.5 py-1.5 rounded-xl text-xs font-medium transition-all ${
                 activeFilter === f
-                  ? "bg-gradient-to-r from-[#6C5DD3] to-[#7C3AED] text-white"
-                  : "glass border border-white/8 text-gray-400 hover:text-white"
+                  ? "bg-gradient-to-r from-[#7C6FF7] to-[#8B5CF6] text-white shadow-lg shadow-[#7C6FF7]/20"
+                  : "glass border border-white/8 text-[#A8B4CC] hover:text-white hover:border-[#7C6FF7]/30"
               }`}
             >
               {f}
             </button>
           ))}
         </div>
-      </GlassCard>
+      </div>
 
       {/* Transaction list */}
-      <GlassCard className="border border-white/5 overflow-hidden">
-        <div className="flex items-center justify-between px-5 py-4 border-b border-white/5">
-          <p className="text-sm font-semibold text-gray-400">
-            {filtered.length} transaksi
+      <div className="glass rounded-2xl border border-white/8 overflow-hidden">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-white/8">
+          <p className="text-sm font-semibold text-[#A8B4CC]">
+            {filtered.length} transaksi {activeFilter !== "Semua" ? `· ${activeFilter}` : ""}
           </p>
-          <p className="text-sm font-bold text-[#EF4444]">
-            Rp {totalFiltered.toLocaleString("id-ID")}
+          <p className="text-sm font-bold text-[#F87171]">
+            -Rp {totalFiltered.toLocaleString("id-ID")}
           </p>
         </div>
 
@@ -194,7 +200,7 @@ export default function ExpensesPage() {
             </div>
           )}
         </div>
-      </GlassCard>
+      </div>
 
       {/* Add Expense Modal */}
       <AnimatePresence>
@@ -236,23 +242,26 @@ export default function ExpensesPage() {
 
                 {/* Amount */}
                 <div>
-                  <label className="text-xs text-gray-400 font-medium mb-1.5 block">Jumlah (Rp)</label>
-                  <div className="relative">
-                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-sm text-gray-500">Rp</span>
+                  <label className="text-xs text-gray-400 font-medium mb-2 block">Jumlah</label>
+                  <div className="flex items-center bg-white/5 border border-white/10 rounded-xl overflow-hidden focus-within:border-[#7C6FF7]/60 transition-all">
+                    <span className="px-4 py-3.5 text-sm font-semibold text-[#6B7A9B] border-r border-white/8 shrink-0 bg-white/3">Rp</span>
                     <input
                       type="number"
                       value={form.amount}
                       onChange={(e) => setForm({ ...form, amount: e.target.value })}
-                      placeholder="0"
-                      className="w-full bg-white/5 border border-white/10 rounded-xl pl-10 pr-4 py-3 text-sm text-white placeholder-gray-500 outline-none focus:border-[#6C5DD3]/50 transition-all"
+                      placeholder="Masukkan nominal"
+                      className="flex-1 bg-transparent px-4 py-3.5 text-sm text-white placeholder-[#6B7A9B] outline-none"
                     />
                   </div>
-                  {/* Quick amounts */}
-                  <div className="flex gap-2 mt-2 flex-wrap">
+                  <div className="flex gap-2 mt-3 flex-wrap">
                     {[10000, 25000, 50000, 100000, 200000].map((v) => (
                       <button key={v} onClick={() => setForm({ ...form, amount: String(v) })}
-                        className="px-2.5 py-1 glass rounded-lg border border-white/8 text-xs text-gray-400 hover:text-white hover:border-[#6C5DD3]/40 transition-all">
-                        {(v / 1000)}K
+                        className={`px-3 py-1.5 rounded-lg border text-xs font-medium transition-all ${
+                          form.amount === String(v)
+                            ? "bg-[#7C6FF7]/20 border-[#7C6FF7]/40 text-[#a78bfa]"
+                            : "glass border-white/8 text-gray-400 hover:text-white hover:border-[#7C6FF7]/30"
+                        }`}>
+                        {v / 1000}K
                       </button>
                     ))}
                   </div>
@@ -264,19 +273,20 @@ export default function ExpensesPage() {
                   <div className="grid grid-cols-4 gap-2">
                     {categories.map((cat) => {
                       const meta = CATEGORY_META[cat];
+                      const shortName = cat === "Food & Drink" ? "Makanan" : cat === "Entertainment" ? "Hiburan" : cat;
                       return (
                         <button
                           key={cat}
                           onClick={() => setForm({ ...form, category: cat })}
-                          className={`flex flex-col items-center gap-1 p-2.5 rounded-xl border text-xs font-medium transition-all ${
+                          className={`flex flex-col items-center gap-1.5 p-3 rounded-2xl border transition-all ${
                             form.category === cat
-                              ? "border-[#6C5DD3]/60 text-white"
+                              ? "border-[#7C6FF7]/60 text-white scale-105"
                               : "border-white/8 text-gray-400 hover:border-white/20 hover:text-white"
                           }`}
-                          style={form.category === cat ? { background: `${meta.color}20` } : {}}
+                          style={form.category === cat ? { background: `${meta.color}18` } : { background: "rgba(255,255,255,0.03)" }}
                         >
-                          <span className="text-base">{meta.icon}</span>
-                          <span className="truncate w-full text-center text-[10px]">{cat}</span>
+                          <span className="text-xl">{meta.icon}</span>
+                          <span className="text-[9px] font-semibold truncate w-full text-center leading-tight">{shortName}</span>
                         </button>
                       );
                     })}
