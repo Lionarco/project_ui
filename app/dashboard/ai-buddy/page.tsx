@@ -3,6 +3,8 @@ import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Bot, Send, Sparkles, Mic, Paperclip, RefreshCw, ThumbsUp, ThumbsDown, Copy } from "lucide-react";
 import GlassCard from "@/components/shared/GlassCard";
+import { useStore, getThisMonthTransactions, getSpentByCategory, getXPInfo } from "@/lib/store";
+import { getUser, getFirstName } from "@/lib/user";
 
 type Message = {
   id: number;
@@ -62,10 +64,42 @@ function formatText(text: string) {
 }
 
 export default function AIBuddyPage() {
-  const [messages, setMessages] = useState<Message[]>(initialMessages);
+  const store = useStore();
+  const [userName, setUserName] = useState("Sobat");
+
+  const monthlyTx = getThisMonthTransactions(store.transactions);
+  const monthlySpend = monthlyTx.reduce((s, tx) => s + tx.amount, 0);
+  const spentByCategory = getSpentByCategory(monthlyTx.length > 0 ? monthlyTx : store.transactions);
+  const xpInfo = getXPInfo(store.totalXP);
+  const biggestCat = Object.entries(spentByCategory).sort((a, b) => b[1] - a[1])[0];
+
+  const buildGreeting = (name: string): string => {
+    if (store.transactions.length === 0) {
+      return `Halo ${name}! 👋 Saya AI Buddy kamu. Yuk mulai catat pengeluaran pertamamu — klik tombol **+** di sudut kanan bawah. Saya siap membantu menganalisis keuanganmu!`;
+    }
+    if (biggestCat) {
+      return `Halo ${name}! 👋 Kamu punya **${store.transactions.length} transaksi** tercatat. Pengeluaran terbesar: **${biggestCat[0]}** (Rp ${Math.round(biggestCat[1]/1000)}K). Mau tanya apa?`;
+    }
+    return `Halo ${name}! 👋 Total pengeluaran bulan ini: **Rp ${Math.round(monthlySpend/1000)}K** dari ${monthlyTx.length} transaksi. Ada yang bisa saya bantu?`;
+  };
+
+  const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const user = getUser();
+    const name = getFirstName(user.name || "Sobat");
+    setUserName(name);
+    setMessages([{
+      id: 1,
+      from: "ai",
+      text: buildGreeting(name),
+      time: new Date().toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" }),
+    }]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [store.transactions.length]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -83,22 +117,45 @@ export default function AIBuddyPage() {
     setInput("");
     setIsTyping(true);
 
-    // Simulate AI response
     setTimeout(() => {
       setIsTyping(false);
-      const aiResponses: Record<string, string> = {
-        "Analisis budget saya":
-          "📊 **Budget Analysis bulan Juni:**\n\n✅ Food & Drink: 68% (aman)\n⚠️ Shopping: 82% (hampir habis!)\n✅ Transport: 64% (aman)\n✅ Entertainment: 18% (sangat baik)\n\nOverall budget health: **Baik** 🟡\n\nKamu masih punya sisa Rp 1.820.000 untuk sisa bulan ini!",
-        "Tips hemat bulan ini":
-          "💡 **3 Tips Hemat Prioritas untuk Kamu:**\n\n1. **Kurangi weekend dining** → hemat Rp 150K\n2. **Batalkan langganan yang jarang dipakai** → hemat Rp 80K\n3. **Pakai transportasi umum 3x seminggu** → hemat Rp 120K\n\n**Total potensi hemat: Rp 350.000/bulan!** 🎯",
-        "Lihat streak saya":
-          "🔥 **Streak Update:**\n\nCurrent streak: **14 hari** berturut-turut!\n\nKamu butuh 16 hari lagi untuk unlock achievement **30-Day Streak** dan dapat **+750 XP**!\n\n📅 Jangan lupa catat pengeluaran hari ini ya~",
-        "Prediksi pengeluaran":
-          "🔮 **Prediksi Pengeluaran Bulan Depan:**\n\nBerdasarkan pola 3 bulan terakhir:\n• Food: ~Rp 750.000\n• Transport: ~Rp 380.000\n• Shopping: ~Rp 520.000\n• Bills: ~Rp 174.000\n\n**Total estimasi: Rp 1.824.000**\n\nAku sarankan naikkan budget shopping jadi Rp 600K bulan depan. Setuju?",
-      };
+      const lowerText = text.toLowerCase();
+      let response = "";
 
-      const response = aiResponses[text] ||
-        `🤔 Pertanyaan bagus! Berdasarkan data keuangan kamu, saya sedang menganalisis... \n\nSecara umum, keuangan kamu bulan ini cukup sehat dengan tabungan **Rp 2.570.000** (51% income). Terus pertahankan! 💪\n\nAda hal spesifik yang ingin kamu tanyakan lebih lanjut?`;
+      if (lowerText.includes("budget") || lowerText.includes("analisis")) {
+        if (store.budgets.length === 0) {
+          response = `📊 **Budget Analysis:**\n\nKamu belum punya budget yang diset. Yuk buat budget di menu Budget untuk mulai melacak pengeluaran per kategori!\n\n💡 Tips: Mulai dengan kategori pengeluaran terbesar kamu.`;
+        } else {
+          const budgetLines = store.budgets.slice(0, 4).map((b) => {
+            const spent = spentByCategory[b.label] ?? 0;
+            const pct = b.allocated > 0 ? Math.round((spent / b.allocated) * 100) : 0;
+            const status = pct > 80 ? "⚠️" : "✅";
+            return `${status} ${b.label}: ${pct}% (Rp ${Math.round(spent/1000)}K dari Rp ${Math.round(b.allocated/1000)}K)`;
+          });
+          response = `📊 **Budget Analysis Bulan Ini:**\n\n${budgetLines.join("\n")}\n\nTotal pengeluaran: **Rp ${Math.round(monthlySpend/1000)}K** (${monthlyTx.length} transaksi).`;
+        }
+      } else if (lowerText.includes("hemat") || lowerText.includes("tips") || lowerText.includes("saran")) {
+        if (store.transactions.length === 0) {
+          response = `💡 **Tips Hemat untuk Pemula:**\n\n1. **Catat setiap pengeluaran** → kesadaran = penghematan\n2. **50/30/20 rule** → 50% kebutuhan, 30% keinginan, 20% tabungan\n3. **Buat budget per kategori** → kontrol lebih mudah\n\nMulai dengan mencatat pengeluaran pertamamu! 🚀`;
+        } else if (biggestCat) {
+          response = `💡 **Tips Hemat Berdasarkan Data Kamu:**\n\n📍 Pengeluaran terbesar: **${biggestCat[0]}** (Rp ${Math.round(biggestCat[1]/1000)}K)\n\n🎯 Rekomendasi:\n1. Kurangi ${biggestCat[0]} 20% = hemat Rp ${Math.round(biggestCat[1]*0.2/1000)}K/bulan\n2. Buat budget ketat untuk kategori ini\n3. Track setiap pembelian agar lebih sadar\n\nPotensi hemat: **Rp ${Math.round(biggestCat[1]*0.2/1000)}K/bulan!** 🎯`;
+        } else {
+          response = `💡 Tambah lebih banyak transaksi agar saya bisa analisis pola pengeluaranmu lebih akurat!`;
+        }
+      } else if (lowerText.includes("streak") || lowerText.includes("xp") || lowerText.includes("level")) {
+        response = `🔥 **Status XP & Streak Kamu:**\n\n⚡ Level: **${xpInfo.level}** (${xpInfo.title})\n💫 Total XP: **${store.totalXP.toLocaleString()} XP**\n🔥 Streak: **${store.streak} hari**\n\n${store.streak >= 7 ? `Mantap! ${store.streak} hari berturut-turut! 🏆` : store.streak > 0 ? `Butuh ${7 - store.streak} hari lagi untuk achievement 7-Day Streak!` : `Mulai catat hari ini! Setiap transaksi = +50 XP 🚀`}`;
+      } else if (lowerText.includes("prediksi") || lowerText.includes("bulan depan")) {
+        if (store.transactions.length < 3) {
+          response = `🔮 **Prediksi Pengeluaran:**\n\nSaya butuh minimal 3 transaksi untuk prediksi akurat. Saat ini kamu punya ${store.transactions.length} transaksi.\n\nTerus catat pengeluaran ya! 📊`;
+        } else {
+          const estimasi = Math.round(monthlySpend * 1.05);
+          response = `🔮 **Prediksi Bulan Depan:**\n\nBerdasarkan ${monthlyTx.length} transaksi bulan ini (Rp ${Math.round(monthlySpend/1000)}K):\n\n📈 Estimasi: **Rp ${Math.round(estimasi/1000)}K**\n\n${biggestCat ? `Kategori terbesar: ${biggestCat[0]} (~Rp ${Math.round(biggestCat[1]/1000)}K)` : ""}\n\n💡 Saranku: tetapkan budget maksimal Rp ${Math.round(monthlySpend/1000)}K untuk bulan depan!`;
+        }
+      } else {
+        response = store.transactions.length === 0
+          ? `👋 Belum ada data keuanganmu. Mulai dengan:\n\n1. **Klik tombol +** untuk tambah pengeluaran\n2. **Buat budget** di menu Budget\n\nSaya siap membantu! 💪`
+          : `🤔 Berdasarkan ${store.transactions.length} transaksi kamu, pengeluaran bulan ini **Rp ${Math.round(monthlySpend/1000)}K**.\n\nKamu bisa tanya saya:\n• "Analisis budget saya"\n• "Tips hemat bulan ini"\n• "Lihat streak saya"\n• "Prediksi pengeluaran"`;
+      }
 
       setMessages((prev) => [
         ...prev,
@@ -109,7 +166,7 @@ export default function AIBuddyPage() {
           time: new Date().toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" }),
         },
       ]);
-    }, 1500 + Math.random() * 1000);
+    }, 1500 + Math.random() * 800);
   };
 
   return (

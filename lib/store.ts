@@ -120,14 +120,16 @@ const DEMO_BUDGETS: Budget[] = [
 ];
 
 export function loadDemoData() {
+  // XP breakdown: Level 1(500) + Level 2(750) + Level 3(750) + Level 4(750) = 2750 XP consumed = Level 5
+  // Then 450 more in Level 5 → total 3200 XP
   const demoStore: StoreData = {
     transactions: buildDemoTransactions(),
     budgets: DEMO_BUDGETS,
-    totalXP: 1360,
-    level: 12,
+    totalXP: 3200,
+    level: 5,
     streak: 14,
     lastActiveDate: new Date().toISOString().slice(0, 10),
-    title: "Financial Warrior ⚔️",
+    title: "Money Manager 💼",
     initialized: true,
   };
   saveStore(demoStore);
